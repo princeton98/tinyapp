@@ -29,7 +29,7 @@ app.get("/urls", (req, res) => {
 app.get("/urls/:shortURL", (req, res) => {
   let shortURL = req.params.shortURL
   let newShortURL = shortURL.slice(1);
-  let templateVars = { shortURL: shortURL, longURL: urlDatabase[newShortURL]};
+  let templateVars = { shortURL: newShortURL, longURL: urlDatabase[newShortURL]};
   res.render("urls_show", templateVars);
 });
 
