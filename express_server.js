@@ -43,7 +43,7 @@ app.get("/urls/new", (req, res) => {
 
 app.get("/urls/:shortURL", (req, res) => {
   let shortURL = req.params.shortURL
-  let newShortURL = shortURL.slice(1);
+  let newShortURL = shortURL.slice(1); //can shorten this
   let templateVars = { shortURL: newShortURL, longURL: urlDatabase[newShortURL] };
   res.render("urls_show", templateVars);
 });
@@ -53,10 +53,10 @@ app.post("/urls", (req, res) => {
   urlDatabase[randomString] = req.body.longURL;
     res.redirect(`/urls/:${randomString}`);
 })
-app.post("/urls/:shortURL", (req, res) => {
-  let sliceURL = req.params.shortURL.slice(1);
-  console.log(req.body.updatedURL);
-  urlDatabase[sliceURL] = req.body.updatedURL ;
+app.post("/urls/:id", (req, res) => {
+  let sliceURL = req.params.id.slice(1);
+  urlDatabase[sliceURL] = req.body.updatedURL;
+  res.redirect("/urls");
 })
 
 app.post(`/urls/:shortURL/delete`, (req, res) => {
