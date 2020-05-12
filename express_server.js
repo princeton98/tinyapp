@@ -35,8 +35,6 @@ app.get("/hello", (req, res) => {
 app.get("/urls", (req, res) => {
   let templateVars = { urls: urlDatabase };
   res.render("urls_index", templateVars);
-  console.log(req.body);
-  res.send("Ok");
 });
 
 app.get("/urls/new", (req, res) => {
@@ -49,6 +47,10 @@ app.get("/urls/:shortURL", (req, res) => {
   let templateVars = { shortURL: newShortURL, longURL: urlDatabase[newShortURL]};
   res.render("urls_show", templateVars);
 });
+app.post("/urls", (req, res) => {
+  console.log(req.body);
+    res.send("Ok");
+})
 
 console.log(generateRandomString());
 
