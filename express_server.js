@@ -12,6 +12,14 @@ const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
 };
+const users = {
+  /*"userRandomID": {
+    id: "userRandomID", 
+    email: "user@example.com", 
+    password: "purple-monkey-dinosaur"
+  },
+  */
+}
 function generateRandomString() {
   // 6 random alphanumeric characters
   let arr = ['1','2','3','4','5','6','7','8','9','0','a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z','A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z'];
@@ -50,6 +58,19 @@ app.get("/register", (req, res) => {
     username: req.cookies["username"]
   }
   res.render("register", templateVars);
+})
+app.post("/register", (req, res) => {
+  console.log(req.body);
+  let email = req.body.email
+  let password = req.body.password
+  let id = generateRandomString();
+  const idName = {id,email, password}
+  res.cookie("id", id);
+  //users.push(user);
+  users[""+ id] = idName;
+  console.log(idName);
+  console.log(users);
+  res.redirect("/urls");
 })
 
 app.get("/urls", (req, res) => {
