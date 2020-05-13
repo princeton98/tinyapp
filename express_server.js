@@ -13,9 +13,14 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 const users = {
-  /*"userRandomID": {
+ /* "userRandomID": {
     id: "userRandomID", 
     email: "user@example.com", 
+    password: "purple-monkey-dinosaur"
+  },
+  "userRandomID2": {
+    id: "userRandomID", 
+    email: "person@example.com", 
     password: "purple-monkey-dinosaur"
   },
   */
@@ -30,6 +35,16 @@ function generateRandomString() {
   finalString = randomNumorLetter.join("")
   return finalString;
 };
+function lookUp(newEmail) {
+  let keys = Object.keys(users);
+  for (let i = 0; i < keys.length; i++) {
+    if(users[keys[i]].email === newEmail) {
+      return false;
+    }
+  }
+  return true;
+}
+
 app.get("/", (req, res) => {
   res.send("Hello!");
 });
@@ -48,6 +63,13 @@ app.post("/login", (req, res) => {
   //console.log(req.cookies["username"]);
   res.redirect("/urls");
 })
+
+app.get("/login", (req, res) => {
+  let templateVars = {
+    user: users[req.cookies["id"]]
+  }
+  res.render("login", templateVars);
+})
 app.post("/logout", (req, res) => {
   res.clearCookie("id");
   res.redirect("urls");
@@ -60,17 +82,22 @@ app.get("/register", (req, res) => {
   res.render("register", templateVars);
 })
 app.post("/register", (req, res) => {
-  //console.log(req.body);
   let email = req.body.email
   let password = req.body.password
   let id = generateRandomString();
-  const idName = {id, email, password}
-  res.cookie("id", id);
-  //users.push(user);
-  users[""+ id] = idName;
-  //console.log(idName);
+  if (email === "" || password === "") {
+    res.status(400).end("Invalid information");
+  } else if (!lookUp(email)) {
+      res.status(400).end("Email in use")
+  }
+  else {
+      const idName = {id, email, password}
+      res.cookie("id", id);
+      users[""+ id] = idName;
+      res.redirect("/urls");
+
+  }
   //console.log(users);
-  res.redirect("/urls");
 })
 
 app.get("/urls", (req, res) => {
