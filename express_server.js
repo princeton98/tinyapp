@@ -9,8 +9,8 @@ app.set("view engine", "ejs");
 app.use(cookieParser())
 
 const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
+  "b2xVn2": {longURL: "http://www.lighthouselabs.ca", userID: "aJ481W"},
+  "9sm5xK": {longURL: "http://www.google.com", userID: "aJ481W"}
 };
 const users = {
  /* "userRandomID": {
@@ -70,7 +70,6 @@ app.post("/login", (req, res) => {
   else {
     return res.status(403).end("Invalid email or password");
   }
-
   res.redirect("/urls");
 })
 
@@ -120,10 +119,14 @@ app.get("/urls", (req, res) => {
 });
 
 app.get("/urls/new", (req, res) => {
+  if (!req.cookies["user_id"]) {
+    res.redirect("/login");
+  } else {
   let templateVars = {
-    user: user[req.cookies["user_id"]]
+    user: users[req.cookies["user_id"]]
   }
   res.render("urls_new", templateVars);
+}
 });
 
 app.get("/urls/:shortURL", (req, res) => {
