@@ -39,10 +39,10 @@ function lookUp(newEmail) {
   let keys = Object.keys(users);
   for (let i = 0; i < keys.length; i++) {
     if(users[keys[i]].email === newEmail) {
-      return false;
+      return keys[i];
     }
   }
-  return true;
+  return false;
 }
 
 app.get("/", (req, res) => {
@@ -59,8 +59,18 @@ app.get("/hello", (req, res) => {
 
 app.post("/login", (req, res) => {
   //console.log(req.body);
-  res.cookie("username", req.body.username)
-  //console.log(req.cookies["username"]);
+  if (lookUp(req.body.email)) {
+    if(users[lookUp(req.body.email)].password === req.body.password) {
+      res.cookie("user_id",lookUp(req.body.email))
+    }
+    else {
+      return res.status(403).end("Invalid password");
+    }
+  }
+  else {
+    return res.status(403).end("Invalid email or password");
+  }
+
   res.redirect("/urls");
 })
 
@@ -71,13 +81,13 @@ app.get("/login", (req, res) => {
   res.render("login", templateVars);
 })
 app.post("/logout", (req, res) => {
-  res.clearCookie("id");
+  res.clearCookie("user_id");
   res.redirect("urls");
 })
 
 app.get("/register", (req, res) => {
   templateVars = {
-    user: users[req.cookies["id"]]
+    user: users[req.cookies["user_id"]]
   }
   res.render("register", templateVars);
 })
@@ -87,12 +97,12 @@ app.post("/register", (req, res) => {
   let id = generateRandomString();
   if (email === "" || password === "") {
     res.status(400).end("Invalid information");
-  } else if (!lookUp(email)) {
+  } else if (lookUp(email)) {
       res.status(400).end("Email in use")
   }
   else {
       const idName = {id, email, password}
-      res.cookie("id", id);
+      res.cookie("user_id", id);
       users[""+ id] = idName;
       res.redirect("/urls");
 
@@ -103,7 +113,7 @@ app.post("/register", (req, res) => {
 app.get("/urls", (req, res) => {
      let templateVars = {
       urls: urlDatabase,
-      user: users[req.cookies["id"]]
+      user: users[req.cookies["user_id"]]
      }
      //console.log(users[req.cookies["id"]]);
   res.render("urls_index", templateVars);
@@ -111,7 +121,7 @@ app.get("/urls", (req, res) => {
 
 app.get("/urls/new", (req, res) => {
   let templateVars = {
-    user: user[req.cookies["id"]]
+    user: user[req.cookies["user_id"]]
   }
   res.render("urls_new", templateVars);
 });
@@ -122,7 +132,7 @@ app.get("/urls/:shortURL", (req, res) => {
   let templateVars = { 
     shortURL: newShortURL, 
     longURL: urlDatabase[newShortURL],
-    user: users[req.cookies["id"]]
+    user: users[req.cookies["user_id"]]
   };
   res.render("urls_show", templateVars);
 });
