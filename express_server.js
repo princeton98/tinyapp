@@ -3,6 +3,7 @@ const app = express();
 const PORT = 8080;
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
+const bcrypt = require("bcrypt");
 
 app.use(bodyParser.urlencoded({extended: true}));
 app.set("view engine", "ejs");
@@ -25,6 +26,7 @@ const users = {
   },
   */
 }
+let hashedPassword = ""
 function generateRandomString() {
   // 6 random alphanumeric characters
   let arr = ['1','2','3','4','5','6','7','8','9','0','a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z','A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z'];
@@ -79,7 +81,8 @@ app.get("/hello", (req, res) => {
 app.post("/login", (req, res) => {
   //console.log(req.body);
   if (lookUp(req.body.email)) {
-    if(users[lookUp(req.body.email)].password === req.body.password) {
+    //if(users[lookUp(req.body.email)].password === req.body.password) {
+      if (bcrypt.compareSync(req.body.password, users[lookUp(req.body.email)].password)){
       res.cookie("user_id",lookUp(req.body.email))
     }
     else {
@@ -111,15 +114,15 @@ app.get("/register", (req, res) => {
 })
 app.post("/register", (req, res) => {
   let email = req.body.email
-  let password = req.body.password
+  hashedPassword = bcrypt.hashSync(req.body.password, 10);
   let id = generateRandomString();
-  if (email === "" || password === "") {
+  if (email === "" || hashedPassword === "") {
     res.status(400).end("Invalid information");
   } else if (lookUp(email)) {
       res.status(400).end("Email in use")
   }
   else {
-      const idName = {id, email, password}
+      const idName = {id, email, password: hashedPassword}
       res.cookie("user_id", id);
       users[""+ id] = idName;
       res.redirect("/urls");
