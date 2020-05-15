@@ -61,7 +61,12 @@ function urlsForUser(id) {
 }
 
 app.get("/", (req, res) => {
-  res.send("Hello!");
+  if(req.session.user_id) {
+  res.redirect("/urls");
+  }
+  else {
+    res.redirect("/login");
+  }
 });
 
 app.get("/urls.json", (req, res) => {
@@ -89,34 +94,40 @@ app.post("/login", (req, res) => {
 })
 
 app.get("/login", (req, res) => {
+  if (req.session.user_id) {
+    res.redirect("/urls");
+  } else {
   let templateVars = {
     //user: users[req.cookies["user_id"]]
     user: users[req.session.user_id]
   }
   res.render("login", templateVars);
-})
+}})
 app.post("/logout", (req, res) => {
   req.session = null;
   res.redirect("login");
 })
 
 app.get("/register", (req, res) => {
+  if (req.session.user_id) {
+    res.redirect("/urls");
+  } else {
   templateVars = {
     //user: users[req.cookies["user_id"]]
     user: users[req.session.user_id]
   }
   res.render("register", templateVars);
-})
+}})
 app.post("/register", (req, res) => {
-  let email = req.body.email
-  const hashedPassword = bcrypt.hashSync(req.body.password, 10);
-  let id = generateRandomString();
-  if (email === "" || hashedPassword === "") {
+  if (req.body.email === "" || req.body.password === "") {
     res.status(400).end("Invalid information");
-  } else if (getUserByEmail(email, users)) {
-      res.status(400).end("Email in use")
+  } else if (getUserByEmail(req.body.email, users)) {
+    res.status(400).end("Email in use")
   }
   else {
+    let email = req.body.email
+    const hashedPassword = bcrypt.hashSync(req.body.password, 10);
+    let id = generateRandomString();
       const idName = {id, email, password: hashedPassword}
       //res.cookie("user_id", id);
       req.session.user_id = id;
@@ -151,44 +162,47 @@ app.get("/urls/new", (req, res) => {
 }
 });
 
-app.get("/urls/:shortURL", (req, res) => {
-  let shortURL = req.params.shortURL
-  let newShortURL = shortURL.slice(1); //can shorten this
+app.get("/urls/:id", (req, res) => {
+  let shortURL = req.params.id.slice(1);
       if (!req.session.user_id) {
         res.end("Not logged in");
-      }
-      else if (urlDatabase[newShortURL].userID !== req.session.user_id) {
+      } else if (!urlDatabase[shortURL]) {
+          res.end("URL does not exist");
+      } else if (urlDatabase[shortURL].userID !== req.session.user_id) {
         res.end("URL locked");
       } else {
   let templateVars = { 
-    shortURL: newShortURL, 
-    longURL: urlDatabase[newShortURL].longURL,
+    shortURL: shortURL, 
+    longURL: urlDatabase[shortURL].longURL,
     user: users[req.session.user_id]
   };
   res.render("urls_show", templateVars);
 }});
 
 app.post("/urls", (req, res) => {
-   console.log(req.body);
+   //console.log(req.body);
+   if (!req.session.user_id) {
+     res.end("You are not logged in")
+   } else {
   randomString = generateRandomString();
   urlDatabase[randomString] = {longURL: req.body.longURL, userID: req.session.user_id}
   //console.log(urlDatabase);
     res.redirect(`/urls/:${randomString}`);
-})
+}})
 app.post("/urls/:id", (req, res) => {
   let sliceURL = req.params.id.slice(1);
   if (!req.session.user_id){
     res.end("You are not logged in")
   } else if (urlDatabase[sliceURL].userID !== req.session.user_id) {
-    res.end("You cannot delete this link");
+    res.end("You don't have permissions for this");
   } else {
   urlDatabase[sliceURL] = {longURL:req.body.updatedURL, userID: req.session.user_id};
   //console.log(req.body.updatedURL)
   res.redirect("/urls");
 }})
 
-app.post(`/urls/:shortURL/delete`, (req, res) => {
-  let shortURL = req.params.shortURL;
+app.post(`/urls/:id/delete`, (req, res) => {
+  let shortURL = req.params.id;
   let sliceURL = shortURL.slice(1);
   if (!req.session.user_id){
     res.end("You are not logged in")
@@ -201,9 +215,13 @@ app.post(`/urls/:shortURL/delete`, (req, res) => {
 
 
 app.get("/u/:shortURL", (req, res) => {
-  const longURL = urlDatabase[req.params.shortURL].longURL
+  let newShortURL = req.params.shortURL.slice(1);
+    if (!urlDatabase[newShortURL]) {
+      res.end("Short URL doesn't exist");
+    } else {
+  const longURL = urlDatabase[newShortURL].longURL;
   res.redirect(longURL);
-})
+}})
 
 //console.log(generateRandomString());
 //console.log(urlsForUser("aJ481W"));
