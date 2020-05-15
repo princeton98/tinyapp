@@ -10,17 +10,17 @@
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
         <a class="nav-item nav-link" href="/register">Register</a>
         <a class="nav-item nav-link" href="/login">Login</a>
-        <div class="nav-item nav-link" style="float: right; margin-right: 100px;">
-          <% if(user) { %>
-            <%= `Logged in As: ${user.email}` %>
-            <form class="nav-item nav-link" method="POST" action="/logout">
-              <button class="logout" class="btn btn-primary">Logout</button>
-            </form>
-            <% } else { %>
-              <%= "Welcome!" %>
-              <% } %>
-            </div>
       </div>
     </div>
+    <div class="nav-item" style="float: right; margin-right: 100px;">
+      <% if(user) { %>
+        <%= `Logged in As: ${user.email}` %>
+        <form class="nav-item nav-link" method="POST" action="/logout">
+          <button class="logout" class="btn btn-primary">Logout</button>
+        </form>
+        <% } else { %>
+          <%= "Welcome!" %>
+          <% } %>
+        </div>
   </nav>
 </header>
