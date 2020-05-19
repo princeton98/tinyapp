@@ -86,7 +86,7 @@ app.post("/register", (req, res) => {
 
 app.get("/urls", (req, res) => {
   if (!req.session.user_id) {
-    res.end("Please login or register first");
+    res.status(403).end("Please login or register first");
   } else {
     let templateVars = {
       urls: urlsForUser(req.session.user_id, urlDatabase),
@@ -98,12 +98,12 @@ app.get("/urls", (req, res) => {
 
 app.post("/urls", (req, res) => {
   if (!req.session.user_id) {
-    res.end("You are not logged in");
+    res.status(403).end("You are not logged in");
   } else {
     let randomString = generateRandomString();
     // adding new shortURL and longURL into the database through a random string key
     urlDatabase[randomString] = { longURL: req.body.longURL, userID: req.session.user_id };
-    res.redirect(`/urls/:${randomString}`);
+    res.redirect(`/urls/${randomString}`);
   }
 });
 
@@ -119,18 +119,19 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.get("/urls/:id", (req, res) => {
-  let shortURL = req.params.id.slice(1);
+  console.log(req.params.id);
+  //let shortURL = req.params.id.slice(1);
   if (!req.session.user_id) {
-    res.end("Not logged in");
-  } else if (!urlDatabase[shortURL]) {
-    res.end("URL does not exist");
+    res.status(403).end("Not logged in");
+  } else if (!urlDatabase[req.params.id]) {
+    res.status(403).end("URL does not exist");
     // checking if userID matches the current login user
-  } else if (urlDatabase[shortURL].userID !== req.session.user_id) {
-    res.end("URL locked");
+  } else if (urlDatabase[req.params.id].userID !== req.session.user_id) {
+    res.status(403).end("URL locked");
   } else {
     let templateVars = {
-      shortURL: shortURL,
-      longURL: urlDatabase[shortURL].longURL,
+      shortURL: req.params.id,
+      longURL: urlDatabase[req.params.id].longURL,
       user: users[req.session.user_id]
     };
     res.render("urls_show", templateVars);
@@ -138,35 +139,36 @@ app.get("/urls/:id", (req, res) => {
 });
 
 app.post("/urls/:id", (req, res) => {
-  let shortURL = req.params.id.slice(1);
+  console.log(req.params.id);
+  //let shortURL = req.params.id.slice(1);
   if (!req.session.user_id) {
-    res.end("You are not logged in");
-  } else if (urlDatabase[shortURL].userID !== req.session.user_id) {
-    res.end("You don't have permissions for this");
+    res.status(403).end("You are not logged in");
+  } else if (urlDatabase[req.params.id].userID !== req.session.user_id) {
+    res.status(403).end("You don't have permissions for this");
   } else {
-    urlDatabase[shortURL] = { longURL: req.body.updatedURL, userID: req.session.user_id };
+    urlDatabase[req.params.id] = { longURL: req.body.updatedURL, userID: req.session.user_id };
     res.redirect("/urls");
   }
 });
 
 app.post(`/urls/:id/delete`, (req, res) => {
-  let shortURL = req.params.id.slice(1);
+  //let shortURL = req.params.id.slice(1);
   if (!req.session.user_id) {
-    res.end("You are not logged in");
-  } else if (urlDatabase[shortURL].userID !== req.session.user_id) {
-    res.end("You cannot delete this link");
+    res.status(403).end("You are not logged in");
+  } else if (urlDatabase[req.params.id].userID !== req.session.user_id) {
+    res.status(403).end("You cannot delete this link");
   } else {
-    delete urlDatabase[shortURL];
+    delete urlDatabase[req.params.id];
     res.redirect("/urls");
   }
 });
 
 app.get("/u/:shortURL", (req, res) => {
-  let shortURL = req.params.shortURL.slice(1);
-  if (!urlDatabase[shortURL]) {
-    res.end("Short URL doesn't exist");
+  //let shortURL = req.params.shortURL.slice(1);
+  if (!urlDatabase[req.params.shortURL]) {
+    res.status(400).end("Short URL doesn't exist");
   } else {
-    const longURL = urlDatabase[shortURL].longURL;
+    const longURL = urlDatabase[req.params.shortURL].longURL;
     res.redirect(longURL);
   }
 });
