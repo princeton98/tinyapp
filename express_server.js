@@ -120,7 +120,6 @@ app.get("/urls/new", (req, res) => {
 
 app.get("/urls/:id", (req, res) => {
   console.log(req.params.id);
-  //let shortURL = req.params.id.slice(1);
   if (!req.session.user_id) {
     res.status(403).end("Not logged in");
   } else if (!urlDatabase[req.params.id]) {
@@ -140,7 +139,6 @@ app.get("/urls/:id", (req, res) => {
 
 app.post("/urls/:id", (req, res) => {
   console.log(req.params.id);
-  //let shortURL = req.params.id.slice(1);
   if (!req.session.user_id) {
     res.status(403).end("You are not logged in");
   } else if (urlDatabase[req.params.id].userID !== req.session.user_id) {
@@ -152,7 +150,6 @@ app.post("/urls/:id", (req, res) => {
 });
 
 app.post(`/urls/:id/delete`, (req, res) => {
-  //let shortURL = req.params.id.slice(1);
   if (!req.session.user_id) {
     res.status(403).end("You are not logged in");
   } else if (urlDatabase[req.params.id].userID !== req.session.user_id) {
@@ -164,7 +161,6 @@ app.post(`/urls/:id/delete`, (req, res) => {
 });
 
 app.get("/u/:shortURL", (req, res) => {
-  //let shortURL = req.params.shortURL.slice(1);
   if (!urlDatabase[req.params.shortURL]) {
     res.status(400).end("Short URL doesn't exist");
   } else {
